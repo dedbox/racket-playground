@@ -43,11 +43,11 @@
                [(pcode rcode) (writeln `(KEY ,pcode ,rcode))]))
            (super-new [parent frame]
                       [paint-callback repaint]))))
-  (collect-garbage)
   (send frame show #t)
   (send canvas focus)
   (thread
    (λ ()
+     (collect-garbage)
      (let loop ([t (current-inexact-milliseconds)])
        (collect-garbage 'incremental)
        (define t* (current-inexact-milliseconds))
