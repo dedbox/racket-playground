@@ -7,6 +7,7 @@
          playground/client/sprite
          racket/class
          racket/flonum
+         racket/function
          racket/gui/base
          racket/match)
 
@@ -15,7 +16,10 @@
 (define (start-client title)
   (define frame (new frame% [label title]))
   (define P (make-player 1500000. -100000. 0. 0.))
-  (define W (make-sprite 400 20 0. -200. 0. 0. 1.))
+  (define Ws (list (make-sprite 620 20 0. -300. 0. 0. 1.)
+                   (make-sprite 620 20 0.  300. 0. 0. 1.)
+                   (make-sprite 20 620 -300. 0. 0. 0. 1.)
+                   (make-sprite 20 620  300. 0. 0. 0. 1.)))
   (define cam (camera 0. 0.))
   (define fps 0.)
   (define canvas
@@ -23,7 +27,7 @@
            (define (repaint _ dc)
              (send dc set-background black)
              (send dc clear)
-             (draw-sprite W cam dc)
+             (for-each (curryr draw-sprite cam dc) Ws)
              (draw-sprite P cam dc)
              (send dc set-text-foreground white)
              (send dc draw-text (format "~a" fps) 10 10))
@@ -52,7 +56,7 @@
        (collect-garbage 'incremental)
        (define t* (current-inexact-milliseconds))
        (define dt (fl- t* t))
-       (run-simulation P W (fl/ dt 1000.))
+       (run-simulation P Ws (fl/ dt 1000.))
        (set! fps (fl+ (fl* fps 0.99) (fl/ 1. dt)))
        (send canvas refresh-now)
        (sleep)

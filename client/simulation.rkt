@@ -4,11 +4,12 @@
          playground/client/sprite
          racket/class
          racket/flonum
+         racket/function
          racket/match)
 
 (provide (all-defined-out))
 
-(define (run-simulation P W dt)
+(define (run-simulation P Ws dt)
   (match P
     [(sprite bitmap x1 x2 v1 v2 m)
      (let*-values ([(f1 f2) (player-force P)]
@@ -20,12 +21,12 @@
        (define x2* (fl+ (sprite-x2 P) (fl* (sprite-v2 P) dt)))
        (set-sprite-x1! P x1*)
        (set-sprite-x2! P x2*)
-       (when (sprites-collide? P W)
+       (when (ormap (curry sprites-collide? P) Ws)
          (set-sprite-x2! P x2)
-         (when (sprites-collide? P W)
+         (when (ormap (curry sprites-collide? P) Ws)
            (set-sprite-x2! P x2*)
            (set-sprite-x1! P x1)
-           (when (sprites-collide? P W)
+           (when (ormap (curry sprites-collide? P) Ws)
              (set-sprite-x2! P x2)))))]))
 
 (define (sprites-collide? P W)
