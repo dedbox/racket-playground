@@ -43,6 +43,7 @@
              (send dc draw-text (real->decimal-string fps 1) 10 10))
            (define/override (on-size w h)
              (set! cam (camera (fl/ (->fl w) 2.) (fl/ (->fl h) 2.))))
+           (define ctrl-down? #f)
            (define/override (on-char event)
              (match* ((send event get-key-code)
                       (send event get-key-release-code))
@@ -54,6 +55,10 @@
                [('release 'right) (set-player-go-right! P #f)]
                [('release    'up) (set-player-go-up!    P #f)]
                [('release  'down) (set-player-go-down!  P #f)]
+               ;; --------------------------------------------
+               [('control 'press) (set! ctrl-down? #t)]
+               [('release 'control) (set! ctrl-down? #f)]
+               [(#\q 'press) (when ctrl-down? (exit))]
                [(pcode rcode) (writeln `(KEY ,pcode ,rcode))]))
            (super-new [parent frame]
                       [paint-callback repaint]))))
