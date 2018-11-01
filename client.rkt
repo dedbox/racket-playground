@@ -15,11 +15,19 @@
 
 (define (start-client title)
   (define frame (new frame% [label title]))
-  (define P (make-player 800. 0. 0.))
-  (define Ws (list (make-sprite 620 20 0. -300.)
-                   (make-sprite 620 20 0.  300.)
-                   (make-sprite 20 620 -300. 0.)
-                   (make-sprite 20 620  300. 0.)))
+  (define Ws
+    (list* (make-sprite 600 20 0. -300.)
+           (make-sprite 600 20 0.  300.)
+           (make-sprite 20 600 -300. 0.)
+           (make-sprite 20 600  300. 0.)
+           (make-sprite 20 20 -300. -300.)
+           (make-sprite 20 20 -300.  300.)
+           (make-sprite 20 20  300. -300.)
+           (make-sprite 20 20  300.  300.)
+           (for*/list ([x1 (in-range -200 201 100)]
+                       [x2 (in-range -200 201 100)])
+             (make-sprite 20 20 (->fl x1) (->fl x2)))))
+  (define P (make-player 800. 40. 40.))
   (define cam (camera 0. 0.))
   (define fps 0.)
   (define canvas
