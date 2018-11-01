@@ -11,14 +11,10 @@
 
 (define (run-simulation P Ws dt)
   (match P
-    [(sprite bitmap x1 x2 v1 v2 m)
-     (let*-values ([(f1 f2) (player-force P)]
-                   [(a1) (fl/ (fl* f1 dt) (sprite-m P))]
-                   [(a2) (fl/ (fl* f2 dt) (sprite-m P))])
-       (set-sprite-v1! P (fl+ (sprite-v1 P) (fl* a1 dt)))
-       (set-sprite-v2! P (fl+ (sprite-v2 P) (fl* a2 dt)))
-       (define x1* (fl+ (sprite-x1 P) (fl* (sprite-v1 P) dt)))
-       (define x2* (fl+ (sprite-x2 P) (fl* (sprite-v2 P) dt)))
+    [(sprite bitmap x1 x2)
+     (let*-values ([(v1 v2) (player-force P)])
+       (define x1* (fl+ x1 (fl* v1 dt)))
+       (define x2* (fl+ x2 (fl* v2 dt)))
        (set-sprite-x1! P x1*)
        (set-sprite-x2! P x2*)
        (when (ormap (curry sprites-collide? P) Ws)
@@ -31,11 +27,11 @@
 
 (define (sprites-collide? P W)
   (match* (P W)
-    [((sprite P-bitmap P-x1 P-x2 _ _ _)
-      (sprite W-bitmap W-x1 W-x2 _ _ _))
-     (let* ([P-w/2 (fl/ (->fl (send P-bitmap get-width)) 2.)]
+    [((sprite P-bitmap P-x1 P-x2)
+      (sprite W-bitmap W-x1 W-x2))
+     (let* ([P-w/2 (fl/ (->fl (send P-bitmap get-width))  2.)]
             [P-h/2 (fl/ (->fl (send P-bitmap get-height)) 2.)]
-            [W-w/2 (fl/ (->fl (send W-bitmap get-width)) 2.)]
+            [W-w/2 (fl/ (->fl (send W-bitmap get-width))  2.)]
             [W-h/2 (fl/ (->fl (send W-bitmap get-height)) 2.)]
             ;; ------------------------
             [P-x1-min (fl- P-x1 P-w/2)]

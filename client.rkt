@@ -15,11 +15,11 @@
 
 (define (start-client title)
   (define frame (new frame% [label title]))
-  (define P (make-player 1500000. -100000. 0. 0.))
-  (define Ws (list (make-sprite 620 20 0. -300. 0. 0. 1.)
-                   (make-sprite 620 20 0.  300. 0. 0. 1.)
-                   (make-sprite 20 620 -300. 0. 0. 0. 1.)
-                   (make-sprite 20 620  300. 0. 0. 0. 1.)))
+  (define P (make-player 800. 0. 0.))
+  (define Ws (list (make-sprite 620 20 0. -300.)
+                   (make-sprite 620 20 0.  300.)
+                   (make-sprite 20 620 -300. 0.)
+                   (make-sprite 20 620  300. 0.)))
   (define cam (camera 0. 0.))
   (define fps 0.)
   (define canvas
@@ -36,14 +36,14 @@
            (define/override (on-char event)
              (match* ((send event get-key-code)
                       (send event get-key-release-code))
-               [('left  'press) (push-player-left!  P)]
-               [('right 'press) (push-player-right! P)]
-               [('up    'press) (push-player-up!    P)]
-               [('down  'press) (push-player-down!  P)]
-               [('release  'left) (drag-player-left!  P)]
-               [('release 'right) (drag-player-right! P)]
-               [('release    'up) (drag-player-up!    P)]
-               [('release  'down) (drag-player-down!  P)]
+               [('left  'press) (set-player-go-left!  P #t)]
+               [('right 'press) (set-player-go-right! P #t)]
+               [('up    'press) (set-player-go-up!    P #t)]
+               [('down  'press) (set-player-go-down!  P #t)]
+               [('release  'left) (set-player-go-left!  P #f)]
+               [('release 'right) (set-player-go-right! P #f)]
+               [('release    'up) (set-player-go-up!    P #f)]
+               [('release  'down) (set-player-go-down!  P #f)]
                [(pcode rcode) (writeln `(KEY ,pcode ,rcode))]))
            (super-new [parent frame]
                       [paint-callback repaint]))))
@@ -57,7 +57,7 @@
        (define t* (current-inexact-milliseconds))
        (define dt (fl- t* t))
        (run-simulation P Ws (fl/ dt 1000.))
-       (set! fps (fl+ (fl* fps 0.99) (fl/ 1. dt)))
+       (set! fps (fl+ (fl* fps 0.99) (fl/ 1. dt))) ; 100-sample moving average
        (send canvas refresh-now)
        (sleep)
        (loop t*)))))

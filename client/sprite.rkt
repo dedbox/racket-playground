@@ -8,9 +8,9 @@
 
 (provide (all-defined-out))
 
-(struct sprite (bitmap x1 x2 v1 v2 m) #:mutable #:transparent)
+(struct sprite (bitmap x1 x2) #:mutable #:transparent)
 
-(define (make-sprite w h x1 x2 v1 v2 m)
+(define (make-sprite w h x1 x2)
   (define bitmap (make-bitmap w h))
   (define dc (send bitmap make-dc))
   (send dc set-pen white 1 'solid)
@@ -19,7 +19,7 @@
   (send dc draw-line 0. 0. (fl- (->fl w) 1.) (fl- (->fl h) 1.))
   (send dc draw-line 0. (fl- (->fl h) 1.) (fl- (->fl w) 1.) 0.)
   (send dc flush)
-  (sprite bitmap x1 x2 v1 v2 m))
+  (sprite bitmap x1 x2))
 
 (define (draw-sprite spr cam dc)
   (define w (->fl (send (sprite-bitmap spr) get-width)))
