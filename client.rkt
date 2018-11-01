@@ -40,7 +40,7 @@
              (for-each (curryr draw-sprite cam dc) Ws)
              (draw-sprite P cam dc)
              (send dc set-text-foreground white)
-             (send dc draw-text (format "~a" fps) 10 10))
+             (send dc draw-text (real->decimal-string fps 1) 10 10))
            (define/override (on-size w h)
              (set! cam (camera (fl/ (->fl w) 2.) (fl/ (->fl h) 2.))))
            (define/override (on-char event)
