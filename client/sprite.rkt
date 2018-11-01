@@ -10,7 +10,7 @@
 
 (struct sprite (bitmap x1 x2) #:mutable #:transparent)
 
-(define (dummy w h [bg-color blue] [fg-color white])
+(define (dummy-bitmap w h [bg-color blue] [fg-color white])
   (define bitmap (make-bitmap w h))
   (define dc (send bitmap make-dc))
   (send dc set-pen fg-color 1 'solid)

@@ -11,9 +11,8 @@
 (struct player sprite (speed go-left go-right go-up go-down)
   #:mutable #:transparent)
 
-(define (make-player speed x1 x2)
-  (define S (sprite (dummy 20 20 red) x1 x2))
-  (player (sprite-bitmap S) x1 x2 speed #f #f #f #f))
+(define (make-player bitmap x1 x2 speed)
+  (player bitmap x1 x2 speed #f #f #f #f))
 
 (define player-force
   (match-lambda
