@@ -10,16 +10,16 @@
 
 (struct sprite (bitmap x1 x2) #:mutable #:transparent)
 
-(define (make-sprite w h x1 x2)
+(define (dummy w h [bg-color blue] [fg-color white])
   (define bitmap (make-bitmap w h))
   (define dc (send bitmap make-dc))
-  (send dc set-pen white 1 'solid)
-  (send dc set-brush blue 'solid)
+  (send dc set-pen fg-color 1 'solid)
+  (send dc set-brush bg-color 'solid)
   (send dc draw-rectangle 0. 0. (->fl w) (->fl h))
   (send dc draw-line 0. 0. (fl- (->fl w) 1.) (fl- (->fl h) 1.))
   (send dc draw-line 0. (fl- (->fl h) 1.) (fl- (->fl w) 1.) 0.)
   (send dc flush)
-  (sprite bitmap x1 x2))
+  bitmap)
 
 (define (draw-sprite spr cam dc)
   (define w (->fl (send (sprite-bitmap spr) get-width)))

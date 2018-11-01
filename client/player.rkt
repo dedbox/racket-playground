@@ -1,6 +1,7 @@
 #lang racket/base
 
-(require playground/client/sprite
+(require playground/client/colors
+         playground/client/sprite
          racket/bool
          racket/flonum
          racket/match)
@@ -11,7 +12,7 @@
   #:mutable #:transparent)
 
 (define (make-player speed x1 x2)
-  (define S (make-sprite 20 20 x1 x2))
+  (define S (sprite (dummy 20 20 red) x1 x2))
   (player (sprite-bitmap S) x1 x2 speed #f #f #f #f))
 
 (define player-force
