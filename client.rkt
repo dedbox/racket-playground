@@ -15,6 +15,7 @@
 
 (define (start-client title)
   (define frame (new frame% [label title]))
+  (define Fs (list (make-sprite 600 600 0. 0.)))
   (define Ws
     (list* (make-sprite 600 20 0. -300.)
            (make-sprite 600 20 0.  300.)
@@ -35,6 +36,7 @@
            (define (repaint _ dc)
              (send dc set-background black)
              (send dc clear)
+             (for-each (curryr draw-sprite cam dc) Fs)
              (for-each (curryr draw-sprite cam dc) Ws)
              (draw-sprite P cam dc)
              (send dc set-text-foreground white)
