@@ -12,4 +12,6 @@
 
 (define white (hex-color #xffffff))
 (define black (hex-color #x000000))
-(define blue (hex-color #x0000ff))
+(define red   (hex-color #xff0000))
+(define green (hex-color #x00ff00))
+(define blue  (hex-color #x0000ff))
