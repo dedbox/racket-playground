@@ -3,4 +3,5 @@
 (require playground/client)
 
 (module+ main
-  (start-client "Pixel Playground"))
+  (void (start-client "Pixel Playground")))
+
