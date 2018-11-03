@@ -47,6 +47,8 @@
            (define/override (on-char event)
              (match* ((send event get-key-code)
                       (send event get-key-release-code))
+               ;; --------------------------------------------
+               ;; player movement
                [('left  'press) (set-player-go-left!  P #t)]
                [('right 'press) (set-player-go-right! P #t)]
                [('up    'press) (set-player-go-up!    P #t)]
@@ -56,8 +58,11 @@
                [('release    'up) (set-player-go-up!    P #f)]
                [('release  'down) (set-player-go-down!  P #f)]
                ;; --------------------------------------------
+               ;; modifiers
                [('control 'press) (set! ctrl-down? #t)]
                [('release 'control) (set! ctrl-down? #f)]
+               ;; --------------------------------------------
+               ;; commands
                [(#\q 'press) (when ctrl-down? (exit))]
                [(pcode rcode) (writeln `(KEY ,pcode ,rcode))]))
            (super-new [parent frame]
