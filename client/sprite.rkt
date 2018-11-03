@@ -8,7 +8,7 @@
 
 (provide (all-defined-out))
 
-(struct sprite (bitmap x1 x2) #:mutable #:transparent)
+(struct sprite (bitmap x y) #:mutable #:transparent)
 
 (define (dummy-bitmap w h [bg-color blue] [fg-color white])
   (define bitmap (make-bitmap w h))
@@ -24,7 +24,7 @@
 (define (draw-sprite spr cam dc)
   (define w (->fl (send (sprite-bitmap spr) get-width)))
   (define h (->fl (send (sprite-bitmap spr) get-height)))
-  (define x1 (fl- (sprite-x1 spr) (fl/ w 2.)))
-  (define x2 (fl- (sprite-x2 spr) (fl/ h 2.)))
-  (define-values (x1* x2*) (apply-camera cam x1 x2))
-  (send dc draw-bitmap (sprite-bitmap spr) x1* x2*))
+  (define x (fl- (sprite-x spr) (fl/ w 2.)))
+  (define y (fl- (sprite-y spr) (fl/ h 2.)))
+  (define-values (x* y*) (apply-camera cam x y))
+  (send dc draw-bitmap (sprite-bitmap spr) x* y*))

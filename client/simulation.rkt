@@ -11,40 +11,40 @@
 
 (define (run-simulation P Ws dt)
   (match P
-    [(sprite bitmap x1 x2)
+    [(sprite bitmap x y)
      (let*-values ([(v1 v2) (player-force P)])
-       (define x1* (fl+ x1 (fl* v1 dt)))
-       (define x2* (fl+ x2 (fl* v2 dt)))
-       (set-sprite-x1! P x1*)
-       (set-sprite-x2! P x2*)
+       (define x* (fl+ x (fl* v1 dt)))
+       (define y* (fl+ y (fl* v2 dt)))
+       (set-sprite-x! P x*)
+       (set-sprite-y! P y*)
        (when (ormap (curry sprites-collide? P) Ws)
-         (set-sprite-x2! P x2)
+         (set-sprite-y! P y)
          (when (ormap (curry sprites-collide? P) Ws)
-           (set-sprite-x2! P x2*)
-           (set-sprite-x1! P x1)
+           (set-sprite-y! P y*)
+           (set-sprite-x! P x)
            (when (ormap (curry sprites-collide? P) Ws)
-             (set-sprite-x2! P x2)))))]))
+             (set-sprite-y! P y)))))]))
 
 (define (sprites-collide? P W)
   (match* (P W)
-    [((sprite P-bitmap P-x1 P-x2)
-      (sprite W-bitmap W-x1 W-x2))
+    [((sprite P-bitmap P-x P-y)
+      (sprite W-bitmap W-x W-y))
      (let* ([P-w/2 (fl/ (->fl (send P-bitmap get-width))  2.)]
             [P-h/2 (fl/ (->fl (send P-bitmap get-height)) 2.)]
             [W-w/2 (fl/ (->fl (send W-bitmap get-width))  2.)]
             [W-h/2 (fl/ (->fl (send W-bitmap get-height)) 2.)]
             ;; ------------------------
-            [P-x1-min (fl- P-x1 P-w/2)]
-            [P-x1-max (fl+ P-x1 P-w/2)]
-            [P-x2-min (fl- P-x2 P-h/2)]
-            [P-x2-max (fl+ P-x2 P-h/2)]
-            [W-x1-min (fl- W-x1 W-w/2)]
-            [W-x1-max (fl+ W-x1 W-w/2)]
-            [W-x2-min (fl- W-x2 W-h/2)]
-            [W-x2-max (fl+ W-x2 W-h/2)]
+            [P-x-min (fl- P-x P-w/2)]
+            [P-x-max (fl+ P-x P-w/2)]
+            [P-y-min (fl- P-y P-h/2)]
+            [P-y-max (fl+ P-y P-h/2)]
+            [W-x-min (fl- W-x W-w/2)]
+            [W-x-max (fl+ W-x W-w/2)]
+            [W-y-min (fl- W-y W-h/2)]
+            [W-y-max (fl+ W-y W-h/2)]
             ;; ------------------------
-            [d1x1 (fl- W-x1-min P-x1-max)]
-            [d1x2 (fl- W-x2-min P-x2-max)]
-            [d2x1 (fl- P-x1-min W-x1-max)]
-            [d2x2 (fl- P-x2-min W-x2-max)])
-       (and (fl> 0. d1x1) (fl> 0. d1x2) (fl> 0. d2x1) (fl> 0. d2x2)))]))
+            [d1x (fl- W-x-min P-x-max)]
+            [d1y (fl- W-y-min P-y-max)]
+            [d2x (fl- P-x-min W-x-max)]
+            [d2y (fl- P-y-min W-y-max)])
+       (and (fl> 0. d1x) (fl> 0. d1y) (fl> 0. d2x) (fl> 0. d2y)))]))
