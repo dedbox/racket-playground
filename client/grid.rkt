@@ -1,6 +1,7 @@
 #lang racket/base
 
-(require racket/flonum)
+(require racket/flonum
+         racket/list)
 
 (provide (all-defined-out))
 
@@ -32,6 +33,17 @@
           [i (in-naturals)])
       (grid-add! G (->fl x) (->fl y) (f i j))))
   G)
+
+(define (grid-area-ref G x-min y-min x-max y-max)
+  (flatten
+   (for*/list ([y (in-range y-min (fl+ y-max 1.) (grid-dy G))]
+               [x (in-range x-min (fl+ x-max 1.) (grid-dx G))])
+     (grid-ref G x y))))
+
+(define (grid-area-add! G x-min y-min x-max y-max v)
+  (for* ([y (in-range y-min (fl+ y-max 1.) (grid-dy G))]
+         [x (in-range x-min (fl+ x-max 1.) (grid-dx G))])
+    (grid-add! G x y v)))
 
 (module+ test
   (require rackunit
