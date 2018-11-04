@@ -28,3 +28,15 @@
   (define y (fl- (sprite-y spr) (fl/ h 2.)))
   (define-values (x* y*) (apply-camera cam x y))
   (send dc draw-bitmap (sprite-bitmap spr) x* y*))
+
+(define (sprite-x-min S)
+  (fl- (sprite-x S) (fl/ (->fl (send (sprite-bitmap S) get-width)) 2.)))
+
+(define (sprite-y-min S)
+  (fl- (sprite-y S) (fl/ (->fl (send (sprite-bitmap S) get-height)) 2.)))
+
+(define (sprite-x-max S)
+  (fl+ (sprite-x S) (fl/ (->fl (send (sprite-bitmap S) get-width)) 2.)))
+
+(define (sprite-y-max S)
+  (fl+ (sprite-y S) (fl/ (->fl (send (sprite-bitmap S) get-height)) 2.)))
