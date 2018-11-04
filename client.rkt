@@ -15,8 +15,8 @@
 
 (define (start-client title)
   (define frame (new frame% [label title]))
-  (define Fs (list (sprite (dummy-bitmap 600 600 green black) 0. 0.)))
-  (define Ws
+  (define floors (list (sprite (dummy-bitmap 600 600 green black) 0. 0.)))
+  (define walls
     (list* (sprite (dummy-bitmap 600 20) 0. -300.)
            (sprite (dummy-bitmap 600 20) 0.  300.)
            (sprite (dummy-bitmap 20 600) -300. 0.)
@@ -28,7 +28,7 @@
            (for*/list ([x (in-range -200 201 100)]
                        [y (in-range -200 201 100)])
              (sprite (dummy-bitmap 20 20) (->fl x) (->fl y)))))
-  (define P (make-player (dummy-bitmap 20 20 red) 50. 50. 1200.))
+  (define player1 (make-player (dummy-bitmap 20 20 red) 50. 50. 1200.))
   (define cam (camera 0. 0.))
   (define fps 0.)
   (define canvas
@@ -36,9 +36,9 @@
            (define (repaint _ dc)
              (send dc set-background black)
              (send dc clear)
-             (for-each (curryr draw-sprite cam dc) Fs)
-             (for-each (curryr draw-sprite cam dc) Ws)
-             (draw-sprite P cam dc)
+             (for-each (curryr draw-sprite cam dc) floors)
+             (for-each (curryr draw-sprite cam dc) walls)
+             (draw-sprite player1 cam dc)
              (send dc set-text-foreground white)
              (send dc draw-text (real->decimal-string fps 1) 10 10))
            (define/override (on-size w h)
@@ -49,14 +49,14 @@
                       (send event get-key-release-code))
                ;; --------------------------------------------
                ;; player movement
-               [('left  'press) (set-player-go-left!  P #t)]
-               [('right 'press) (set-player-go-right! P #t)]
-               [('up    'press) (set-player-go-up!    P #t)]
-               [('down  'press) (set-player-go-down!  P #t)]
-               [('release  'left) (set-player-go-left!  P #f)]
-               [('release 'right) (set-player-go-right! P #f)]
-               [('release    'up) (set-player-go-up!    P #f)]
-               [('release  'down) (set-player-go-down!  P #f)]
+               [('left  'press) (set-player-go-left!  player1 #t)]
+               [('right 'press) (set-player-go-right! player1 #t)]
+               [('up    'press) (set-player-go-up!    player1 #t)]
+               [('down  'press) (set-player-go-down!  player1 #t)]
+               [('release  'left) (set-player-go-left!  player1 #f)]
+               [('release 'right) (set-player-go-right! player1 #f)]
+               [('release    'up) (set-player-go-up!    player1 #f)]
+               [('release  'down) (set-player-go-down!  player1 #f)]
                ;; --------------------------------------------
                ;; modifiers
                [('control 'press) (set! ctrl-down? #t)]
@@ -76,7 +76,7 @@
        (collect-garbage 'incremental)
        (define t* (current-inexact-milliseconds))
        (define dt (fl- t* t))
-       (run-simulation P Ws (fl/ dt 1000.))
+       (run-simulation player1 walls (fl/ dt 1000.))
        (set! fps (fl+ (fl* fps 0.99) (fl/ 1. dt))) ; 100-sample moving average
        (send canvas refresh-now)
        (sleep)

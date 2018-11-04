@@ -9,21 +9,21 @@
 
 (provide (all-defined-out))
 
-(define (run-simulation P Ws dt)
-  (match P
+(define (run-simulation player1 walls dt)
+  (match player1
     [(sprite bitmap x y)
-     (let*-values ([(v1 v2) (player-force P)])
+     (let*-values ([(v1 v2) (player-force player1)])
        (define x* (fl+ x (fl* v1 dt)))
        (define y* (fl+ y (fl* v2 dt)))
-       (set-sprite-x! P x*)
-       (set-sprite-y! P y*)
-       (when (ormap (curry sprites-collide? P) Ws)
-         (set-sprite-y! P y)
-         (when (ormap (curry sprites-collide? P) Ws)
-           (set-sprite-y! P y*)
-           (set-sprite-x! P x)
-           (when (ormap (curry sprites-collide? P) Ws)
-             (set-sprite-y! P y)))))]))
+       (set-sprite-x! player1 x*)
+       (set-sprite-y! player1 y*)
+       (when (ormap (curry sprites-collide? player1) walls)
+         (set-sprite-y! player1 y)
+         (when (ormap (curry sprites-collide? player1) walls)
+           (set-sprite-y! player1 y*)
+           (set-sprite-x! player1 x)
+           (when (ormap (curry sprites-collide? player1) walls)
+             (set-sprite-y! player1 y)))))]))
 
 (define (sprites-collide? sprite1 sprite2)
   (let ([d1x (fl- (sprite-x-min sprite2) (sprite-x-max sprite1))]
