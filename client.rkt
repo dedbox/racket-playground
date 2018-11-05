@@ -25,9 +25,9 @@
            (sprite (dummy-bitmap 20 20) -300.  300.)
            (sprite (dummy-bitmap 20 20)  300. -300.)
            (sprite (dummy-bitmap 20 20)  300.  300.)
-           (for*/list ([x (in-range -200 201 100)]
-                       [y (in-range -200 201 100)])
-             (sprite (dummy-bitmap 20 20) (->fl x) (->fl y)))))
+           (for*/list ([x (in-range -200. 201. 100.)]
+                       [y (in-range -200. 201. 100.)])
+             (sprite (dummy-bitmap 20 20) x y))))
   (define player1 (make-player (dummy-bitmap 20 20 red) 50. 50. 1200.))
   (define cam (camera 0. 0.))
   (define fps 0.)
