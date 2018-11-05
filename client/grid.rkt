@@ -27,11 +27,11 @@
 
 (define (build-grid x-min y-min x-max y-max dx dy f)
   (define G (make-grid x-min y-min x-max y-max dx dy))
-  (for ([y (in-range -300 300 100)]
+  (for ([y (in-range y-min y-max dy)]
         [j (in-naturals)])
-    (for ([x (in-range -300 300 100)]
+    (for ([x (in-range x-min x-max dx)]
           [i (in-naturals)])
-      (grid-add! G (->fl x) (->fl y) (f i j))))
+      (grid-add! G x y (f i j))))
   G)
 
 (define (grid-area-ref G x-min y-min x-max y-max)
