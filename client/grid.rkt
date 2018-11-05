@@ -5,13 +5,13 @@
 
 (provide (all-defined-out))
 
-(struct grid (cells x-min y-min dx dy num-cols) #:transparent)
+(struct grid (cells x-min y-min x-max y-max dx dy num-cols) #:transparent)
 
 (define (make-grid x-min y-min x-max y-max dx dy)
   (define num-rows (inexact->exact (ceiling (fl/ (fl- y-max y-min) dy))))
   (define num-cols (inexact->exact (ceiling (fl/ (fl- x-max x-min) dx))))
   (define cells (make-vector (* num-rows num-cols) null))
-  (grid cells x-min y-min dx dy num-cols))
+  (grid cells x-min y-min x-max y-max dx dy num-cols))
 
 (define (grid-index G x y)
   (define row (inexact->exact (floor (fl/ (fl- y (grid-y-min G)) (grid-dy G)))))
@@ -51,7 +51,7 @@
 
   (test-case "make-grid"
     (match (make-grid -300. -300. 300. 300. 100. 100.)
-      [(grid cells x-min y-min dx dy num-cols)
+      [(grid cells x-min y-min _ _ dx dy num-cols)
        (check-equal? cells (make-vector 36 null))
        (check = x-min -300.)
        (check = y-min -300.)
