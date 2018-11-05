@@ -1,7 +1,9 @@
 #lang racket/base
 
 (require racket/flonum
-         racket/list)
+         racket/list
+         racket/match
+         racket/math)
 
 (provide (all-defined-out))
 
@@ -14,16 +16,21 @@
   (grid cells x-min y-min x-max y-max dx dy num-cols))
 
 (define (grid-index G x y)
-  (define row (inexact->exact (floor (fl/ (fl- y (grid-y-min G)) (grid-dy G)))))
-  (define col (inexact->exact (floor (fl/ (fl- x (grid-x-min G)) (grid-dx G)))))
-  (+ col (* row (grid-num-cols G))))
+  (match G
+    [(grid _ x-min y-min x-max y-max dx dy _)
+     (and
+      (not (or (fl< x x-min) (fl< y y-min) (fl> x x-max) (fl> y x-max)))
+      (let ([row (exact-floor (fl/ (fl- y y-min) dy))]
+            [col (exact-floor (fl/ (fl- x x-min) dx))])
+        (+ col (* row (grid-num-cols G)))))]))
 
 (define (grid-ref G x y)
-  (vector-ref (grid-cells G) (grid-index G x y)))
+  (define k (grid-index G x y))
+  (and k (vector-ref (grid-cells G) k)))
 
 (define (grid-add! G x y v)
-  (define index (grid-index G x y))
-  (vector-set! (grid-cells G) index (cons v (vector-ref (grid-cells G) index))))
+  (define k (grid-index G x y))
+  (and k (vector-set! (grid-cells G) k (cons v (vector-ref (grid-cells G) k)))))
 
 (define (build-grid x-min y-min x-max y-max dx dy f)
   (define G (make-grid x-min y-min x-max y-max dx dy))
