@@ -1,8 +1,11 @@
 #lang racket/base
 
-(require racket/flonum
+(require playground/client/camera
+         playground/client/colors
+         racket/class
+         racket/flonum
+         racket/function
          racket/list
-         racket/match
          racket/math)
 
 (provide (all-defined-out))
@@ -15,22 +18,64 @@
   (define cells (make-vector (* num-rows num-cols) null))
   (grid cells x-min y-min x-max y-max dx dy num-cols))
 
+(define (grid-row-index G y)
+  (define y-min (grid-y-min G))
+  (define y-max (grid-x-max G))
+  (define dy (grid-dy G))
+  (exact-floor (fl/ (fl- y y-min) dy)))
+
+(define (grid-col-index G x)
+  (define x-min (grid-x-min G))
+  (define x-max (grid-x-max G))
+  (define dx (grid-dx G))
+  (exact-floor (fl/ (fl- x x-min) dx)))
+
 (define (grid-index G x y)
-  (match G
-    [(grid _ x-min y-min x-max y-max dx dy _)
-     (and
-      (not (or (fl< x x-min) (fl< y y-min) (fl> x x-max) (fl> y x-max)))
-      (let ([row (exact-floor (fl/ (fl- y y-min) dy))]
-            [col (exact-floor (fl/ (fl- x x-min) dx))])
-        (+ col (* row (grid-num-cols G)))))]))
+  (define col (grid-col-index G x))
+  (define row (grid-row-index G y))
+  (define num-cols (grid-num-cols G))
+  (+ col (* row num-cols)))
+
+(define (grid-cell-x-min G x)
+  (define x-min (grid-x-min G))
+  (define col (->fl (grid-col-index G x)))
+  (define dx (grid-dx G))
+  (fl+ x-min (fl* col dx)))
+
+(define (grid-cell-y-min G y)
+  (define y-min (grid-y-min G))
+  (define row (->fl (grid-row-index G y)))
+  (define dy (grid-dy G))
+  (fl+ y-min (fl* row dy)))
+
+(define (grid-indices G x-min y-min x-max y-max)
+  (define xs (let loop ([x (grid-cell-x-min G x-min)] [xs null])
+               (if (fl> x x-max) xs (loop (fl+ x (grid-dx G)) (cons x xs)))))
+  (define ys (let loop ([y (grid-cell-y-min G y-min)] [ys null])
+               (if (fl> y y-max) ys (loop (fl+ y (grid-dy G)) (cons y ys)))))
+  (for*/list ([y (in-list ys)]
+              [x (in-list xs)])
+    (grid-index G x y)))
 
 (define (grid-ref G x y)
-  (define k (grid-index G x y))
-  (and k (vector-ref (grid-cells G) k)))
+  (define x-min (grid-x-min G))
+  (define x-max (grid-x-max G))
+  (define y-min (grid-y-min G))
+  (define y-max (grid-y-max G))
+  (and (fl>= x x-min) (fl<= x x-max)
+       (fl>= y y-min) (fl<= y y-max)
+       (vector-ref (grid-cells G) (grid-index G x y))))
 
 (define (grid-add! G x y v)
-  (define k (grid-index G x y))
-  (and k (vector-set! (grid-cells G) k (cons v (vector-ref (grid-cells G) k)))))
+  (define x-min (grid-x-min G))
+  (define x-max (grid-x-max G))
+  (define y-min (grid-y-min G))
+  (define y-max (grid-y-max G))
+  (define cells (grid-cells G))
+  (and (fl>= x x-min) (fl<= x x-max)
+       (fl>= y y-min) (fl<= y y-max)
+       (let ([k (grid-index G x y)])
+         (vector-set! cells k (cons v (vector-ref cells k))))))
 
 (define (build-grid x-min y-min x-max y-max dx dy f)
   (define G (make-grid x-min y-min x-max y-max dx dy))
@@ -42,15 +87,78 @@
   G)
 
 (define (grid-area-ref G x-min y-min x-max y-max)
-  (flatten
-   (for*/list ([y (in-range y-min (fl+ y-max 1.) (grid-dy G))]
-               [x (in-range x-min (fl+ x-max 1.) (grid-dx G))])
-     (grid-ref G x y))))
+  (define G-x-min (grid-x-min G))
+  (define G-x-max (grid-x-max G))
+  (define G-y-min (grid-y-min G))
+  (define G-y-max (grid-y-max G))
+  (and (fl>= x-min G-x-min) (fl<= x-max G-x-max)
+       (fl>= y-min G-y-min) (fl<= y-max G-y-max)
+       (flatten (map (curry vector-ref (grid-cells G))
+                     (grid-indices G x-min y-min x-max y-max)))))
 
 (define (grid-area-add! G x-min y-min x-max y-max v)
-  (for* ([y (in-range y-min (fl+ y-max 1.) (grid-dy G))]
-         [x (in-range x-min (fl+ x-max 1.) (grid-dx G))])
-    (grid-add! G x y v)))
+  (define G-x-min (grid-x-min G))
+  (define G-x-max (grid-x-max G))
+  (define G-y-min (grid-y-min G))
+  (define G-y-max (grid-y-max G))
+  (and (fl>= x-min G-x-min) (fl<= x-max G-x-max)
+       (fl>= y-min G-y-min) (fl<= y-max G-y-max)
+       (for* ([y (in-range y-min (fl+ y-max 1.) (grid-dy G))]
+              [x (in-range x-min (fl+ x-max 1.) (grid-dx G))])
+         (grid-add! G x y v))))
+
+(define (draw-grid G cam dc)
+  (define x-min (grid-x-min G))
+  (define x-max (grid-x-max G))
+  (define y-min (grid-y-min G))
+  (define y-max (grid-y-max G))
+  (define dx (grid-dx G))
+  (define dy (grid-dy G))
+  (send dc set-pen red 1 'solid)
+  (send dc set-brush red 'transparent)
+  (for* ([y (in-range y-min y-max dy)]
+         [x (in-range x-min x-max dx)])
+    (define width (flmin dx (fl- x-max x)))
+    (define height (flmin dy (fl- y-max y)))
+    (define-values (x* y*) (apply-camera cam x y))
+    (send dc draw-rectangle x* y* width height)))
+
+(define (draw-grid-ref-index G cam dc k)
+  (define x-min (grid-x-min G))
+  (define x-max (grid-x-max G))
+  (define y-min (grid-y-min G))
+  (define y-max (grid-y-max G))
+  (define dx (grid-dx G))
+  (define dy (grid-dy G))
+  (define num-cols (grid-num-cols G))
+  (define-values (row col) (quotient/remainder k num-cols))
+  (define x (fl+ x-min (fl* (->fl col) dx)))
+  (define y (fl+ y-min (fl* (->fl row) dy)))
+  (define-values (x* y*) (apply-camera cam x y))
+  (define width (flmin dx (fl- x-max x)))
+  (define height (flmin dy (fl- y-max y)))
+  (send dc set-pen green 2 'solid)
+  (send dc set-brush green 'transparent)
+  (send dc draw-rectangle x* y* width height))
+
+(define (draw-grid-ref G cam dc x y)
+  (define x-min (grid-x-min G))
+  (define x-max (grid-x-max G))
+  (define y-min (grid-y-min G))
+  (define y-max (grid-y-max G))
+  (and (fl>= x x-min) (fl<= x x-max)
+       (fl>= y y-min) (fl<= y y-max)
+       (draw-grid-ref-index G cam dc (grid-index G x y))))
+
+(define (draw-grid-area-ref G cam dc x-min y-min x-max y-max)
+  (define G-x-min (grid-x-min G))
+  (define G-x-max (grid-x-max G))
+  (define G-y-min (grid-y-min G))
+  (define G-y-max (grid-y-max G))
+  (and (fl>= x-min G-x-min) (fl<= x-max G-x-max)
+       (fl>= y-min G-y-min) (fl<= y-max G-y-max)
+       (for ([k (grid-indices G x-min y-min x-max y-max)])
+         (draw-grid-ref-index G cam dc k))))
 
 (module+ test
   (require rackunit

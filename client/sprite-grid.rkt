@@ -1,20 +1,64 @@
 #lang racket/base
 
-(require playground/client/grid
-         playground/client/sprite)
+(require playground/client/camera
+         playground/client/grid
+         playground/client/sprite
+         racket/class
+         racket/draw
+         racket/flonum)
 
 (provide (all-defined-out))
 
 (define (sprite-grid-ref G S)
-  (let ([x-min (sprite-x-min S)]
-        [y-min (sprite-y-min S)]
-        [x-max (sprite-x-max S)]
-        [y-max (sprite-y-max S)])
-    (grid-area-ref G x-min y-min x-max y-max)))
+  (define G-x-min (grid-x-min G))
+  (define G-x-max (grid-x-max G))
+  (define G-y-min (grid-y-min G))
+  (define G-y-max (grid-y-max G))
+  (define x-min (sprite-x-min S))
+  (define y-min (sprite-y-min S))
+  (define x-max (sprite-x-max S))
+  (define y-max (sprite-y-max S))
+  (and (fl>= x-min G-x-min) (fl<= x-max G-x-max)
+       (fl>= y-min G-y-min) (fl<= y-max G-y-max)
+       (grid-area-ref G x-min y-min x-max y-max)))
 
 (define (sprite-grid-add! G S)
-  (let ([x-min (sprite-x-min S)]
-        [y-min (sprite-y-min S)]
-        [x-max (sprite-x-max S)]
-        [y-max (sprite-y-max S)])
-    (grid-area-add! G x-min y-min x-max y-max S)))
+  (define G-x-min (grid-x-min G))
+  (define G-x-max (grid-x-max G))
+  (define G-y-min (grid-y-min G))
+  (define G-y-max (grid-y-max G))
+  (define x-min (sprite-x-min S))
+  (define y-min (sprite-y-min S))
+  (define x-max (sprite-x-max S))
+  (define y-max (sprite-y-max S))
+  (and (fl>= x-min G-x-min) (fl<= x-max G-x-max)
+       (fl>= y-min G-y-min) (fl<= y-max G-y-max)
+       (grid-area-add! G x-min y-min x-max y-max S)))
+
+(define (draw-sprite-grid-ref G cam dc S)
+  (define G-x-min (grid-x-min G))
+  (define G-x-max (grid-x-max G))
+  (define G-y-min (grid-y-min G))
+  (define G-y-max (grid-y-max G))
+  (define x-min (sprite-x-min S))
+  (define x-max (sprite-x-max S))
+  (define y-min (sprite-y-min S))
+  (define y-max (sprite-y-max S))
+  (when (and (fl>= x-min G-x-min) (fl<= x-max G-x-max)
+             (fl>= y-min G-y-min) (fl<= y-max G-y-max))
+    (draw-grid-area-ref G cam dc x-min y-min x-max y-max)
+    (for ([S (in-list (grid-area-ref G x-min y-min x-max y-max))])
+      (define x11 (fl- (sprite-x S) 5.))
+      (define y11 (fl- (sprite-y S) 5.))
+      (define x21 (fl+ (sprite-x S) 5.))
+      (define y21 (fl+ (sprite-y S) 5.))
+      (define-values (x11* y11*) (apply-camera cam x11 y11))
+      (define-values (x21* y21*) (apply-camera cam x21 y21))
+      (send dc draw-line x11* y11* x21* y21*)
+      (define x12 (fl+ (sprite-x S) 5.))
+      (define y12 (fl- (sprite-y S) 5.))
+      (define x22 (fl- (sprite-x S) 5.))
+      (define y22 (fl+ (sprite-y S) 5.))
+      (define-values (x12* y12*) (apply-camera cam x12 y12))
+      (define-values (x22* y22*) (apply-camera cam x22 y22))
+      (send dc draw-line x12* y12* x22* y22*))))
