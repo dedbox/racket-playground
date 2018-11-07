@@ -2,9 +2,11 @@
 
 (require playground/client/camera
          playground/client/colors
+         playground/client/grid
          playground/client/player
          playground/client/simulation
          playground/client/sprite
+         playground/client/sprite-grid
          racket/class
          racket/flonum
          racket/function
@@ -28,7 +30,9 @@
            (for*/list ([x (in-range -200. 201. 100.)]
                        [y (in-range -200. 201. 100.)])
              (sprite (dummy-bitmap 20 20) x y))))
-  (define player1 (make-player (dummy-bitmap 20 20 red) 50. 50. 1200.))
+  (define player1 (make-player (dummy-bitmap 20 20 red) 50. 50. 700.))
+  (define grid (make-grid -320. -320. 320. 320. 100. 100.))
+  (for-each (curry sprite-grid-add! grid) walls)
   (define cam (camera 0. 0.))
   (define fps 0.)
   (define canvas
@@ -82,7 +86,7 @@
        (collect-garbage 'incremental)
        (define t* (current-inexact-milliseconds))
        (define dt (fl- t* t))
-       (run-simulation player1 walls (fl/ dt 1000.))
+       (run-simulation player1 grid (fl/ dt 1000.))
        (set! fps (fl+ (fl* fps 0.99) (fl/ 1. dt))) ; 100-sample moving average
        (send canvas refresh-now)
        (sleep)
