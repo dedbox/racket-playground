@@ -17,19 +17,18 @@
 
 (define (start-client title)
   (define frame (new frame% [label title]))
+  (define roofs (list (sprite (dummy-bitmap 20 20 orange) -300. -300.)
+                      (sprite (dummy-bitmap 20 20 orange) -300.  300.)
+                      (sprite (dummy-bitmap 20 20 orange)  300. -300.)
+                      (sprite (dummy-bitmap 20 20 orange)  300.  300.)))
   (define floors (list (sprite (dummy-bitmap 600 600 green black) 0. 0.)))
-  (define walls
-    (list* (sprite (dummy-bitmap 600 20) 0. -300.)
-           (sprite (dummy-bitmap 600 20) 0.  300.)
-           (sprite (dummy-bitmap 20 600) -300. 0.)
-           (sprite (dummy-bitmap 20 600)  300. 0.)
-           (sprite (dummy-bitmap 20 20) -300. -300.)
-           (sprite (dummy-bitmap 20 20) -300.  300.)
-           (sprite (dummy-bitmap 20 20)  300. -300.)
-           (sprite (dummy-bitmap 20 20)  300.  300.)
-           (for*/list ([x (in-range -200. 201. 100.)]
-                       [y (in-range -200. 201. 100.)])
-             (sprite (dummy-bitmap 20 20) x y))))
+  (define walls (list* (sprite (dummy-bitmap 600 20) 0. -300.)
+                       (sprite (dummy-bitmap 600 20) 0.  300.)
+                       (sprite (dummy-bitmap 20 600) -300. 0.)
+                       (sprite (dummy-bitmap 20 600)  300. 0.)
+                       (for*/list ([x (in-range -200. 201. 100.)]
+                                   [y (in-range -200. 201. 100.)])
+                         (sprite (dummy-bitmap 20 20) x y))))
   (define player1 (make-player (dummy-bitmap 20 20 red) 50. 50. 700.))
   (define grid (make-grid -320. -320. 320. 320. 100. 100.))
   (for-each (curry sprite-grid-add! grid) walls)
@@ -43,6 +42,7 @@
              (for-each (curryr draw-sprite cam dc) floors)
              (for-each (curryr draw-sprite cam dc) walls)
              (draw-sprite player1 cam dc)
+             (for-each (curryr draw-sprite cam dc) roofs)
              (send dc set-text-foreground white)
              (send dc draw-text (real->decimal-string fps 1) 10 10)
              (send dc draw-text (format "(~a,~a)-(~a,~a)"
