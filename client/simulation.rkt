@@ -1,30 +1,25 @@
 #lang racket/base
 
-(require playground/client/player
+(require playground/client/input
+         playground/client/player
          playground/client/sprite
          playground/client/sprite-grid
-         racket/class
          racket/flonum
-         racket/function
-         racket/match)
+         racket/function)
 
 (provide (all-defined-out))
 
-(define (run-simulation player1 grid dt)
-  (match player1
-    [(sprite bitmap x y)
-     (let*-values ([(v1 v2) (player-force player1)])
-       (define x* (fl+ x (fl* v1 dt)))
-       (define y* (fl+ y (fl* v2 dt)))
-       (set-sprite-x! player1 x*)
-       (set-sprite-y! player1 y*)
-       (when (ormap (curry sprites-collide? player1)
-                    (sprite-grid-ref grid player1))
-         (set-sprite-y! player1 y)
-         (when (ormap (curry sprites-collide? player1)
-                      (sprite-grid-ref grid player1))
-           (set-sprite-y! player1 y*)
-           (set-sprite-x! player1 x)
-           (when (ormap (curry sprites-collide? player1)
-                        (sprite-grid-ref grid player1))
-             (set-sprite-y! player1 y)))))]))
+(define (run-simulation P I grid dt)
+  (define speed (player-speed P))
+  (define-values (vx vy) (input->v2 I))
+  (define dx (fl* (fl* speed vx) dt))
+  (define dy (fl* (fl* speed vy) dt))
+  (define walls (sprite-grid-ref grid P))
+  (define P*xy (move-player P dx dy))
+  (if (not (ormap (curry sprites-collide? P*xy) walls))
+      P*xy
+      (let ([P*x (move-player P dx 0.)])
+        (if (not (ormap (curry sprites-collide? P*x) walls))
+            P*x
+            (let ([P*y (move-player P 0. dy)])
+              (if (not (ormap (curry sprites-collide? P*y) walls)) P*y P))))))

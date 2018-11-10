@@ -8,7 +8,10 @@
 
 (provide (all-defined-out))
 
-(struct sprite (bitmap x y) #:mutable #:transparent)
+(struct sprite (bitmap x y) #:transparent)
+
+(define (move-sprite S dx dy)
+  (struct-copy sprite S [x (fl+ (sprite-x S) dx)] [y (fl+ (sprite-y S) dy)]))
 
 (define (dummy-bitmap w h [bg-color blue] [fg-color white])
   (define bitmap (make-bitmap w h))
